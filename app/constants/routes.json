@@ -1,4 +1,9 @@
 {
   "HOME": "/",
-  "COUNTER": "/counter"
+  "COUNTER": "/counter",
+  "SETUP": "/setup",
+  "USERS": "/users",
+  "USER": "/user/:id",
+  "GROUPS": "/groups",
+  "GROUP": "/group/:id"
 }
