@@ -43,16 +43,24 @@ class EditUser extends Component {
   }
 
   addTag(uid = "") {
-    var tags = [...this.state.tags, uid];
+    if (this.state.tags.length)
+      var tags = [...this.props.form.getFieldValue('tags'), uid];
+    else
+      var tags = [uid];
+
     this.setState({tags})
     this.props.form.setFieldsValue({tags});
   }
 
   async addTagRFID() {
     var reading = Modal.info({title: 'Waiting for tag on RFID reader...', okText: 'Cancel'});
-    var UID = await nfc.readUID();
+
+    try {
+      var UID = await nfc.readUID();
+      this.addTag(UID);
+    } catch(e) {}
+
     reading.destroy();
-    this.addTag(UID);
   }
 
   handleSubmit(e) {
@@ -129,9 +137,17 @@ class EditUser extends Component {
           <Button type="dashed" onClick={() => this.addTag()}>
             <Icon type="plus" /> Add tag
           </Button>&nbsp;
-          <Button type="dashed" onClick={() => this.addTagRFID()}>
-            <Icon type="plus" /> Add tag (From RFID)
-          </Button>
+          { nfc.enabled() ? (
+            <Button type="dashed" onClick={() => this.addTagRFID()} disabled={!nfc.enabled()}>
+              <Icon type="plus" /> Add tag (From RFID)
+            </Button>
+          ) : (
+            <Tooltip title="NFC is disabled. Enable in setup.">
+              <Button type="dashed" onClick={() => this.addTagRFID()} disabled={!nfc.enabled()}>
+                <Icon type="plus" /> Add tag (From RFID)
+              </Button>
+            </Tooltip>
+          )}
         </FormItem>
         <FormItem label="Groups" {...formItemLayout}>
           {getFieldDecorator('groups', {

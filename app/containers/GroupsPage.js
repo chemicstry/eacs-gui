@@ -7,7 +7,7 @@ export default class GroupsPage extends Component {
   render() {
     return (
       <div>
-        <GroupsTable />
+        <GroupsTable /><br/>
         <Link to={'/group/0'}><Button type="primary">Create Group</Button></Link>
       </div>
     )

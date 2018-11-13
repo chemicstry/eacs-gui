@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Form, Input, Button, Icon, Tooltip, Upload, Select, message } from 'antd';
+import { Form, Input, Button, Icon, Tooltip, Upload, Select, Divider, Switch, message } from 'antd';
 import * as mdns from 'mdns';
 import * as nfc from '../utils/nfc'
 
@@ -66,23 +66,41 @@ class SetupForm extends Component {
   render() {
     const { getFieldDecorator, setFieldValue } = this.props.form;
 
+    const formItemLayout = {
+      labelCol: {
+        xs: { span: 24 },
+        sm: { span: 6, offset: 0 },
+      },
+      wrapperCol: {
+        xs: { span: 24 },
+        sm: { span: 18 },
+      },
+    };
+    const formItemLayoutWithOutLabel = {
+      wrapperCol: {
+        xs: { span: 24, offset: 0 },
+        sm: { span: 18, offset: 6 },
+      },
+    };
+
     return (
       <Form onSubmit={(e) => this.handleSubmit(e)}>
-        <FormItem>
+        <Divider orientation="left">Connection</Divider>
+        <FormItem label="User Auth URL" {...formItemLayout}>
           {getFieldDecorator('userAuthServiceAddress', {
             rules: [{ required: true, message: 'Please user authentication service address' }],
           })(
             <Input placeholder="User Auth Service Address" addonAfter={<Tooltip title="Fetch from mDNS"><Icon type="sync" onClick={() => this.fetchmdns()} /></Tooltip>} />
           )}
         </FormItem>
-        <FormItem>
+        <FormItem label="Auth Token" {...formItemLayout}>
           {getFieldDecorator('authToken', {
             rules: [{ required: true, message: 'Please enter authentication token' }],
           })(
             <Input placeholder="Authentication Token" />
           )}
         </FormItem>
-        <FormItem>
+        <FormItem label="Certificate" {...formItemLayout}>
           {getFieldDecorator('serverCert', {
             rules: [{ required: true, message: 'Please select user authentication service certificate' }],
           })(
@@ -93,17 +111,27 @@ class SetupForm extends Component {
             </Upload>
           )}
         </FormItem>
-        <FormItem>
+        <Divider orientation="left">RFID Integration</Divider>
+        <FormItem label="Enabled" {...formItemLayout}>
+          {getFieldDecorator('serialEnabled', {
+            rules: [{ required: false }],
+          })(
+            <Switch />
+          )}
+        </FormItem>
+        <FormItem label="Serial Port" {...formItemLayout}>
+          <Input.Group>
           {getFieldDecorator('serialPort', {
-            rules: [{ required: true, message: 'Please select PN532 reader serial port' }],
+            rules: [{ required: false, message: 'Please select PN532 reader serial port' }],
           })(
             <Select placeholder="NFC reader serial port">
               {this.state.serialPorts.map(port => (<Select.Option key={port.comName} value={port.comName}>{port.comName} ({port.manufacturer})</Select.Option>))}
             </Select>
           )}
-          <Button icon="sync" onClick={() => this.updateSerialPorts()} />
+          <Button icon="sync" onClick={() => this.updateSerialPorts()} style={{marginLeft:10}} />
+          </Input.Group>
         </FormItem>
-        <FormItem>
+        <FormItem {...formItemLayoutWithOutLabel}>
           <Button
             type="primary"
             htmlType="submit"

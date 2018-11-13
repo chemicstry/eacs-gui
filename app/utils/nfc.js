@@ -9,14 +9,27 @@ function listPorts()
   return SerialPort.list();
 }
 
-function initNFC(port)
+function close()
 {
   return new Promise((resolve, reject) => {
+    serialport.close(() => resolve());
+  });
+}
+
+function initNFC(port)
+{
+  return new Promise(async (resolve, reject) => {
     console.log(`Initializing PN532 on port ${port}`);
+
+    if (serialport && serialport.isOpen) {
+      console.log(`Port already open, closing...`);
+      await close();
+    }
+
     serialport = new SerialPort(port, {
       baudRate: 115200
     });
-    serialport.write("OMGOMGOMG");
+
     try {
       nfc = new PN532(serialport);
     } catch (e) {
@@ -33,17 +46,29 @@ function initNFC(port)
   });
 }
 
+var readPromiseReject;
 function readUID()
 {
   return new Promise((resolve, reject) => {
+    // Check if previous read was in progress
+    if (readPromiseReject)
+      readPromiseReject();
+
+    readPromiseReject = reject;
     nfc.scanTag().then(function(tag) {
       resolve(tag.uid.replace(/:/g, '').toUpperCase());
     });
   })
 }
 
+function enabled()
+{
+  return serialport && serialport.isOpen;
+}
+
 export {
   listPorts,
   initNFC,
-  readUID
+  readUID,
+  enabled
 }

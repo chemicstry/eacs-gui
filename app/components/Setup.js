@@ -25,9 +25,13 @@ export default withRouter(class Setup extends Component {
     try {
       this.setState({error: false});
       this.setState({connecting: true});
+
       let cert = readFileSync(e.serverCert.fileList[0].originFileObj.path);
       await rpc.connect(e.userAuthServiceAddress, e.authToken, cert);
-      await nfc.initNFC(e.serialPort);
+
+      if (e.serialEnabled)
+        await nfc.initNFC(e.serialPort);
+      
       this.props.history.push('/users');
     } catch (e) {
       console.log(e);

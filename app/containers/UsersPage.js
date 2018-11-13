@@ -7,7 +7,7 @@ export default class UsersPage extends Component {
   render() {
     return (
       <div>
-        <UsersTable />
+        <UsersTable /><br/>
         <Link to={'/user/0'}><Button type="primary">Create User</Button></Link>
       </div>
     )

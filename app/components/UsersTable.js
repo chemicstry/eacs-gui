@@ -35,7 +35,7 @@ export default class UsersTable extends Component {
 
   render() {
     return (
-      <Table dataSource={this.state.users}>
+      <Table dataSource={this.state.users} size="middle">
         <Column
           title="ID"
           dataIndex="id"

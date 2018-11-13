@@ -32,7 +32,11 @@ class EditGroup extends Component {
   }
 
   addPermission() {
-    var permissions = [...this.state.permissions, ""];
+    if (this.state.permissions.length)
+      var permissions = [...this.props.form.getFieldValue('permissions'), ""];
+    else
+      var permissions = [""];
+
     this.setState({permissions})
     this.props.form.setFieldsValue({permissions});
   }
