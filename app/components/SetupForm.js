@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Form, Input, Button, Icon, Tooltip, Upload, Select, Divider, Switch, message } from 'antd';
-import * as mdns from 'mdns';
+import { FindService } from '../utils/mdns';
 import * as nfc from '../utils/nfc'
 
 const FormItem = Form.Item;
@@ -28,22 +28,17 @@ class SetupForm extends Component {
 
   async fetchmdns() {
     try {
-      var address = await new Promise((resolve, reject) => {
-        var browser = mdns.createBrowser(mdns.tcp('eacs-user-auth'));
-
-        var timer = setTimeout(() => reject('Service not found'), 3000);
-
-        browser.on('serviceUp', (service) => {
-          console.log(service);
-          if (service.addresses.length)
-          {
-            resolve("wss://" + service.addresses[0] + ":" + service.port);
-            browser.stop();
-            clearTimeout(timer);
-          }
-        });
-        browser.start();
+      var service = await FindService({
+        type: 'eacs-user-auth'
       });
+
+      if (!service.addresses.length)
+      {
+        message.error("mDNS response does not contain any address");
+        return;
+      }
+
+      var address = `wss://${service.addresses[0]}:${service.port}`;
 
       this.props.form.setFieldsValue({
         userAuthServiceAddress: address
