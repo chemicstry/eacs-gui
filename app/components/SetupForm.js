@@ -52,7 +52,11 @@ class SetupForm extends Component {
     e.preventDefault();
     this.props.form.validateFields((err, values) => {
       if (!err) {
-        localStorage.setItem('setupFormData', JSON.stringify(values));
+        // Save options to local storage, except the auth token
+        let {authToken, ...safeValues} = values;
+        localStorage.setItem('setupFormData', JSON.stringify(safeValues));
+
+        // Proceed
         this.props.onSubmit(values);
       }
     });
