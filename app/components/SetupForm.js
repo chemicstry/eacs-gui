@@ -119,7 +119,7 @@ class SetupForm extends Component {
           {getFieldDecorator('serialPort', {
             rules: [{ required: false, message: 'Please select PN532 reader serial port' }],
           })(
-            <Select placeholder="NFC reader serial port">
+            <Select placeholder="NFC reader serial port" style={{minWidth:'200px'}}>
               {this.state.serialPorts.map(port => (<Select.Option key={port.comName} value={port.comName}>{port.comName} ({port.manufacturer})</Select.Option>))}
             </Select>
           )}
