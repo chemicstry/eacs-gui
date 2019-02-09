@@ -13,7 +13,7 @@ export default class EditUserPage extends Component {
     var id = this.props.match.params.id;
     if (id)
     {
-      var users = await rpc.client.call('getUsers');
+      var users = await rpc.client.call('admin:getUsers');
       var userData = users.find((e) => {
         return e.id == id
       });

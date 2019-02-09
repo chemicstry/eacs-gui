@@ -53,7 +53,7 @@ class EditGroup extends Component {
         if (!values.permissions)
           values.permissions = [];
         
-        var res = await rpc.client.call('upsertGroup', values);
+        var res = await rpc.client.call('admin:upsertGroup', values);
         if (res)
           message.success('Group saved!');
         else

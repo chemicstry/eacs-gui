@@ -11,7 +11,7 @@ export default class GroupsTable extends Component {
   }
 
   async fetchGroups() {
-    var groups = await rpc.client.call('getGroups');
+    var groups = await rpc.client.call('admin:getGroups');
     groups.forEach((group) => {
       group.key = group.id;
     });
@@ -24,13 +24,25 @@ export default class GroupsTable extends Component {
   }
 
   async deleteGroup(id) {
-    var res = await rpc.client.call('deleteGroup', id);
+    var res = await rpc.client.call('admin:deleteGroup', id);
     if (res)
       message.success('Group deleted!');
     else
       message.error('Error deleting group');
 
     this.fetchGroups();
+  }
+
+  renderPermissions(permissions) {
+    const maxShown = 2;
+    var shown = permissions.slice(0, maxShown).map(permission => <Tag key={permission}>{permission}</Tag>);
+    if (permissions.length <= maxShown)
+      return <div>{shown}</div>;
+
+    var hidden = (<Popover content={<div>{permissions.slice(maxShown).map(permission => <div key={permission}>{permission}</div>)}</div>} title="Permissions">
+      <Tag color="blue">+{permissions.length-maxShown}</Tag>
+    </Popover>)
+    return <div>{shown}{hidden}</div>;
   }
 
   render() {
@@ -50,9 +62,7 @@ export default class GroupsTable extends Component {
           title="Permissions"
           dataIndex="permissions"
           key="permissions"
-          render={permissions => (
-            <span>{permissions.map(permission => <Tag key={permission}>{permission}</Tag>)}</span>
-          )}
+          render={permissions => this.renderPermissions(permissions)}
         />
         <Column
           title="Actions"

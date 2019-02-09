@@ -26,13 +26,19 @@ export default withRouter(class Setup extends Component {
       this.setState({error: false});
       this.setState({connecting: true});
 
-      let cert = readFileSync(e.serverCert.fileList[0].originFileObj.path);
-      await rpc.connect(e.userAuthServiceAddress, e.authToken, cert);
-
-      if (e.serialEnabled)
+      if (e.rfidEnabled)
         await nfc.initNFC(e.serialPort);
       
-      this.props.history.push('/users');
+      if (e.authMethod == 'token') {
+        await rpc.connect(e.serverAddress, e.serverFingerprint, e.authToken);
+        this.props.history.push('/users');
+      } else if (e.authMethod == 'rfid') {
+        await rpc.connect(e.serverAddress, e.serverFingerprint);
+        this.props.history.push('/rfidAuth');
+      } else {
+        throw Error(`Unknown auth method ${e.authMethod}`);
+      }
+      
     } catch (e) {
       console.log(e);
       this.setState({error: e});

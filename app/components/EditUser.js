@@ -19,7 +19,7 @@ class EditUser extends Component {
     }
 
     // Fetch available groups
-    var availableGroups = await rpc.client.call('getGroups');
+    var availableGroups = await rpc.client.call('admin:getGroups');
     availableGroups = availableGroups.map((group) => {
       return group.name;
     })
@@ -56,8 +56,8 @@ class EditUser extends Component {
     var reading = Modal.info({title: 'Waiting for tag on RFID reader...', okText: 'Cancel'});
 
     try {
-      var UID = await nfc.readUID();
-      this.addTag(UID);
+      var tagInfo = await nfc.readTagInfo();
+      this.addTag(tagInfo.UID);
     } catch(e) {}
 
     reading.destroy();
@@ -75,7 +75,7 @@ class EditUser extends Component {
         if (!values.tags)
           values.tags = [];
         
-        var res = await rpc.client.call('upsertUser', values);
+        var res = await rpc.client.call('admin:upsertUser', values);
         if (res)
           message.success('User saved!');
         else

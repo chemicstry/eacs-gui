@@ -1,13 +1,20 @@
 import React, { Component } from 'react';
-import { Form, Input, Button, Icon, Tooltip, Upload, Select, Divider, Switch, message } from 'antd';
+import { Form, Input, Button, Icon, Tooltip, Upload, Select, Divider, Switch, Radio, message } from 'antd';
 import { FindService } from '../utils/mdns';
-import * as nfc from '../utils/nfc'
+import * as nfc from '../utils/nfc';
+import * as fileDialog from 'file-dialog';
+import { readFileSync } from 'fs';
+import { pki, md, asn1 } from 'node-forge';
 
 const FormItem = Form.Item;
+const RadioButton = Radio.Button;
+const RadioGroup = Radio.Group;
 
 class SetupForm extends Component {
   state = {
-    serialPorts: []
+    serialPorts: [],
+    authMethod: 'token',
+    rfidEnabled: false,
   }
 
   componentDidMount() {
@@ -16,8 +23,14 @@ class SetupForm extends Component {
     //load previous values
     try {
       let values = JSON.parse(localStorage.getItem('setupFormData'));
-      if (values)
+      console.log(values);
+      if (values) {
         this.props.form.setFieldsValue(values);
+        this.setState({
+          authMethod: values.authMethod,
+          rfidEnabled: values.rfidEnabled
+        })
+      }
     } catch(e) {}
   }
 
@@ -38,10 +51,12 @@ class SetupForm extends Component {
         return;
       }
 
+      console.log(service);
+
       var address = `wss://${service.addresses[0]}:${service.port}`;
 
       this.props.form.setFieldsValue({
-        userAuthServiceAddress: address
+        serverAddress: address
       })
     } catch(e) {
       message.error(e);
@@ -60,6 +75,57 @@ class SetupForm extends Component {
         this.props.onSubmit(values);
       }
     });
+  }
+
+  handleRfidEnabled(e) {
+    this.setState({
+      rfidEnabled: e
+    });
+
+    if (!e) {
+      this.setState({
+        authMethod: 'token'
+      });
+      this.props.form.setFieldsValue({
+        authMethod: 'token'
+      })
+    }
+  }
+
+  handleAuthMethodChange(e) {
+    this.setState({
+      authMethod: e.target.value
+    });
+    console.log(e);
+  }
+
+  renderCertificateSelect() {
+    var form = this.props.form;
+
+    function certToFingerprint(cert) {
+      var hash = md.sha1.create().update(asn1.toDer(pki.certificateToAsn1(pki.certificateFromPem(cert))).getBytes()).digest().toHex();
+      var chunks = hash.toUpperCase().match(/.{1,2}/g);
+      return chunks.join(':');
+    }
+  
+    async function selectFile() {
+      fileDialog().then(files => {
+        console.log(`Loading certificate file: ${files[0].path}`)
+        let cert = readFileSync(files[0].path);
+
+        var fingerprint = certToFingerprint(cert);
+
+        console.log(`Fingerprint: ${fingerprint}`);
+
+        form.setFieldsValue({
+          serverFingerprint: fingerprint
+        })
+      });
+    }
+
+    return (
+      <Tooltip title="Fetch from certificate file"><Icon type="file" onClick={() => selectFile()} /></Tooltip>
+    );
   }
 
   render() {
@@ -85,37 +151,27 @@ class SetupForm extends Component {
     return (
       <Form onSubmit={(e) => this.handleSubmit(e)}>
         <Divider orientation="left">Connection</Divider>
-        <FormItem label="User Auth URL" {...formItemLayout}>
-          {getFieldDecorator('userAuthServiceAddress', {
-            rules: [{ required: true, message: 'Please user authentication service address' }],
+        <FormItem label="Server URL" {...formItemLayout}>
+          {getFieldDecorator('serverAddress', {
+            rules: [{ required: true, message: 'Please enter server address' }],
           })(
-            <Input placeholder="User Auth Service Address" addonAfter={<Tooltip title="Fetch from mDNS"><Icon type="sync" onClick={() => this.fetchmdns()} /></Tooltip>} />
+            <Input placeholder="Server Address" addonAfter={<Tooltip title="Fetch from mDNS"><Icon type="sync" onClick={() => this.fetchmdns()} /></Tooltip>} />
           )}
         </FormItem>
-        <FormItem label="Auth Token" {...formItemLayout}>
-          {getFieldDecorator('authToken', {
-            rules: [{ required: true, message: 'Please enter authentication token' }],
+        <FormItem label="Fingerprint" {...formItemLayout}>
+          {getFieldDecorator('serverFingerprint', {
+            rules: [{ required: true, message: 'Please enter sha1 server fingerprint' }],
           })(
-            <Input placeholder="Authentication Token" />
-          )}
-        </FormItem>
-        <FormItem label="Certificate" {...formItemLayout}>
-          {getFieldDecorator('serverCert', {
-            rules: [{ required: true, message: 'Please select user authentication service certificate' }],
-          })(
-            <Upload>
-              <Button>
-                <Icon type="upload" /> Select User Auth Service Certificate
-              </Button>
-            </Upload>
+            <Input placeholder="Server Fingerprint" addonAfter={this.renderCertificateSelect()} />
           )}
         </FormItem>
         <Divider orientation="left">RFID Integration</Divider>
         <FormItem label="Enabled" {...formItemLayout}>
-          {getFieldDecorator('serialEnabled', {
+          {getFieldDecorator('rfidEnabled', {
             rules: [{ required: false }],
+            valuePropName: 'checked'
           })(
-            <Switch />
+            <Switch onChange={e => this.handleRfidEnabled(e)} />
           )}
         </FormItem>
         <FormItem label="Serial Port" {...formItemLayout}>
@@ -130,6 +186,27 @@ class SetupForm extends Component {
           <Button icon="sync" onClick={() => this.updateSerialPorts()} style={{marginLeft:10}} />
           </Input.Group>
         </FormItem>
+        <Divider orientation="left">Authentication</Divider>
+        <FormItem label="Method" {...formItemLayout}>
+          {getFieldDecorator('authMethod', {
+            rules: [{ required: true, message: 'Please select authentication method' }],
+            initialValue: 'token'
+          })(
+            <RadioGroup buttonStyle="solid" onChange={e => this.handleAuthMethodChange(e)}>
+              <RadioButton value="token">Token</RadioButton>
+              <RadioButton value="rfid" disabled={!this.state.rfidEnabled}>RFID</RadioButton>
+            </RadioGroup>
+          )}
+        </FormItem>
+        {(this.state.authMethod == 'token') ? (
+        <FormItem label="Auth Token" {...formItemLayout}>
+          {getFieldDecorator('authToken', {
+            rules: [{ required: true, message: 'Please enter authentication token' }],
+          })(
+            <Input placeholder="Authentication Token" />
+          )}
+        </FormItem>
+        ) : ''}
         <FormItem {...formItemLayoutWithOutLabel}>
           <Button
             type="primary"

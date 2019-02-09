@@ -13,7 +13,7 @@ export default class EditGroupPage extends Component {
     var id = this.props.match.params.id;
     if (id)
     {
-      var groups = await rpc.client.call('getGroups');
+      var groups = await rpc.client.call('admin:getGroups');
       var groupData = groups.find((e) => {
         return e.id == id
       });

@@ -1,4 +1,4 @@
-import { WSTransport, RPCClient } from 'modular-json-rpc';
+import { WSTransport, RPCNode } from 'modular-json-rpc';
 import globalState from '../store/globalState';
 import WebSocket from 'ws';
 import { message } from 'antd';
@@ -6,15 +6,33 @@ import { history } from '../store/configureStore';
 
 var client;
 
-function connect(address, token, cert)
+function connect(address, fingerprint, token)
 {
   return new Promise((resolve, reject) => {
+    if (token)
+      var headers = {token};
+    else
+      var headers = {};
+
     const ws = new WebSocket(address, [], {
-      headers: {
-        token
-      },
-      ca: [cert],
-      checkServerIdentity: (host, cert) => { } // Skip hostname check, certificate is still validated
+      headers,
+      rejectUnauthorized: false, // we do manual fingerprint check
+      checkServerIdentity: (hostname, cert) => {console.log(cert)}
+    });
+
+    var req = ws._req;
+    req.on('socket', socket => {
+      console.log(socket);
+      socket.on('secureConnect', () => {
+        var fingerprint_server = socket.getPeerCertificate().fingerprint;
+    
+        // Match the fingerprint with our saved fingerprints
+        if (fingerprint.indexOf(fingerprint_server) === -1){
+          // Abort request, optionally emit an error event
+          req.emit('error', new Error(`Fingerprint does not match. Expected: ${fingerprint}, got: ${fingerprint_server}`));
+          return req.abort();
+        }
+      });
     });
 
     ws.on('open', async () => {
@@ -25,7 +43,7 @@ function connect(address, token, cert)
         var transport = new WSTransport(ws);
 
         // Create RPC client
-        client = new RPCClient(transport);
+        client = new RPCNode(transport);
 
         resolve(true);
     });

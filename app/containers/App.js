@@ -39,6 +39,12 @@ export default withRouter(@observer class App extends React.Component<Props> {
             { globalState.connected ? (
               <Menu.Item key="3"><Link to={routes.GROUPS}>Groups</Link></Menu.Item>
             ) : ''}
+            { globalState.connected ? (
+              <Menu.Item key="4"><Link to={routes.INITKEY}>Init Tag</Link></Menu.Item>
+            ) : ''}
+            { globalState.connected ? (
+              <Menu.Item key="5"><Link to={routes.TAGINFO}>Tag Info</Link></Menu.Item>
+            ) : ''}
           </Menu>
         </Header>
         <Content style={{ padding: '0 50px' }}>

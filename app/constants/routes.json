@@ -5,5 +5,8 @@
   "USERS": "/users",
   "USER": "/user/:id",
   "GROUPS": "/groups",
-  "GROUP": "/group/:id"
+  "GROUP": "/group/:id",
+  "RFIDAUTH": "/rfidAuth",
+  "INITKEY": "/initKey",
+  "TAGINFO": "/tagInfo"
 }

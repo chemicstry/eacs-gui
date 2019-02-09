@@ -11,7 +11,7 @@ export default class UsersTable extends Component {
   }
 
   async fetchUsers() {
-    var users = await rpc.client.call('getUsers');
+    var users = await rpc.client.call('admin:getUsers');
     users.forEach((user) => {
       user.key = user.id;
     });
@@ -24,7 +24,7 @@ export default class UsersTable extends Component {
   }
 
   async deleteUser(id) {
-    var res = await rpc.client.call('deleteUser', id);
+    var res = await rpc.client.call('admin:deleteUser', id);
     if (res)
       message.success('User deleted!');
     else
