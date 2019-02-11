@@ -42,7 +42,7 @@ class SetupForm extends Component {
   async fetchmdns() {
     try {
       var service = await FindService({
-        type: 'eacs-user-auth'
+        type: 'eacs-server'
       });
 
       if (!service.addresses.length)
