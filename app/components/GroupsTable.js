@@ -33,6 +33,12 @@ export default class GroupsTable extends Component {
     this.fetchGroups();
   }
 
+  componentWillReceiveProps(props) {
+    const {refresh} = this.props;
+    if (refresh !== props.refresh)
+      this.fetchGroups();
+  }
+
   renderPermissions(permissions) {
     const maxShown = 2;
     var shown = permissions.slice(0, maxShown).map(permission => <Tag key={permission}>{permission}</Tag>);

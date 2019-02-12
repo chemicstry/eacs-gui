@@ -33,6 +33,12 @@ export default class UsersTable extends Component {
     this.fetchUsers();
   }
 
+  componentWillReceiveProps(props) {
+    const {refresh} = this.props;
+    if (refresh !== props.refresh)
+      this.fetchUsers();
+  }
+
   render() {
     return (
       <Table dataSource={this.state.users} size="middle">
