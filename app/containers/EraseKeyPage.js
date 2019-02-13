@@ -3,28 +3,19 @@ import * as nfc from '../utils/nfc';
 import * as rpc from '../utils/rpc';
 import { Row, Spin, Alert, Button } from 'antd';
 
-const requiredPermissions = [
-  "admin:getUsers",
-  "admin:upsertUser",
-  "admin:deleteUser",
-  "admin:getGroups",
-  "admin:upsertGroup",
-  "admin:deleteGroup",
-  "rfid:initKey",
-  "rfid:eraseKey",
-  "rfid:tagInfo"
-];
 
-export default class RFIDAuthPage extends Component {
+export default class EraseKeyPage extends Component {
   state = {
     error: null,
+    success: false
   }
 
   async waitForTag()
   {
     // Reset state
     this.setState({
-      error: null
+      error: null,
+      success: false
     });
 
     // Bind backwards rpc call to cryptographically authenticate tag
@@ -40,17 +31,12 @@ export default class RFIDAuthPage extends Component {
 
     try {
       var tagInfo = await nfc.readTagInfo();
-      var permissions = await rpc.client.call("rfid:authSocket", tagInfo);
-      console.log(permissions);
+      if (!await rpc.client.call("rfid:eraseKey", tagInfo))
+        throw new Error("Key erase failed");
 
-      // Check if we got all required permissions
-      for (let permission of requiredPermissions) {
-        console.log(permission);
-        if (!permissions.includes(permission))
-          throw new Error(`User is not authorised to call ${permission}`);
-      }
-
-      this.props.history.push('/users');
+      this.setState({
+        success: true
+      })
     } catch(error) {
       console.log(error);
       this.setState({error});
@@ -65,16 +51,17 @@ export default class RFIDAuthPage extends Component {
   render() {
     return (
       <div>
-        {this.state.error === null ? (
+        {this.state.error === null && this.state.success === false ? (
           <div>
             <Row type="flex" justify="center" style={{marginTop: 20}}>
               <Spin />
             </Row>
             <Row type="flex" justify="center" style={{marginTop: 20}}>
-              Waiting for RFID tag with admin permission
+              Waiting for a valid RFID tag
             </Row>
           </div>
-        ) : (
+        ) : ''}
+        {this.state.error ? (
           <div>
             <Row type="flex" justify="center" style={{marginTop: 20}}>
               <Alert message={this.state.error.toString()} type="error" />
@@ -83,7 +70,17 @@ export default class RFIDAuthPage extends Component {
               <Button onClick={() => this.waitForTag()}>Retry</Button>
             </Row>
           </div>
-        )}
+        ) : ''}
+        {this.state.success ? (
+          <div>
+            <Row type="flex" justify="center" style={{marginTop: 20}}>
+              <Alert message="Tag key erase successful" type="success" />
+            </Row>
+            <Row type="flex" justify="center" style={{marginTop: 20}}>
+              <Button onClick={() => this.waitForTag()}>Repeat</Button>
+            </Row>
+          </div>
+        ) : ''}
       </div>
     )
   }

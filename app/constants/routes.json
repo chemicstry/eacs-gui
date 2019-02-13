@@ -8,5 +8,6 @@
   "GROUP": "/group/:id",
   "RFIDAUTH": "/rfidAuth",
   "INITKEY": "/initKey",
+  "ERASEKEY": "/eraseKey",
   "TAGINFO": "/tagInfo"
 }

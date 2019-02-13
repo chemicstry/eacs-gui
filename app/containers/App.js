@@ -43,7 +43,10 @@ export default withRouter(@observer class App extends React.Component<Props> {
               <Menu.Item key="4"><Link to={routes.INITKEY}>Init Tag</Link></Menu.Item>
             ) : ''}
             { globalState.connected ? (
-              <Menu.Item key="5"><Link to={routes.TAGINFO}>Tag Info</Link></Menu.Item>
+              <Menu.Item key="5"><Link to={routes.ERASEKEY}>Erase Tag</Link></Menu.Item>
+            ) : ''}
+            { globalState.connected ? (
+              <Menu.Item key="6"><Link to={routes.TAGINFO}>Tag Info</Link></Menu.Item>
             ) : ''}
           </Menu>
         </Header>

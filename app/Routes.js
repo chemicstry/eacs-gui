@@ -12,6 +12,7 @@ import EditGroupPage from './containers/EditGroupPage';
 import RFIDAuthPage from './containers/RFIDAuthPage';
 import InitKeyPage from './containers/InitKeyPage';
 import TagInfoPage from './containers/TagInfoPage';
+import EraseKeyPage from './containers/EraseKeyPage';
 
 export default class Routes extends Component {
   render() {
@@ -22,6 +23,7 @@ export default class Routes extends Component {
           <Route path={routes.SETUP} component={SetupPage} />
           <Route path={routes.RFIDAUTH} component={RFIDAuthPage} />
           <Route path={routes.INITKEY} component={InitKeyPage} />
+          <Route path={routes.ERASEKEY} component={EraseKeyPage} />
           <Route path={routes.TAGINFO} component={TagInfoPage} />
           <Route path={routes.USERS} component={UsersPage} />
           <Route path={routes.USER} render={(props) => <EditUserPage {...props}/>} />
