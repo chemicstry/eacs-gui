@@ -1,7 +1,7 @@
 {
   "name": "eacs-gui",
   "productName": "eacs-gui",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "description": "Extensible Access Control System. GUI management tool.",
   "scripts": {
     "build": "concurrently \"yarn build-main\" \"yarn build-renderer\"",
